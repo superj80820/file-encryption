@@ -1,0 +1,26 @@
+{
+  "name": "env-encryption",
+  "version": "1.0.0",
+  "description": "### Decrypt",
+  "main": "index.js",
+  "dependencies": {
+    "commander": "^6.2.0",
+    "inquirer": "^7.3.3",
+    "jest": "^26.6.1",
+    "ramda": "^0.27.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/superj80820/env-encryption.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/superj80820/env-encryption/issues"
+  },
+  "homepage": "https://github.com/superj80820/env-encryption#readme"
+}

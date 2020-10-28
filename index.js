@@ -1,23 +1,9 @@
-"use strict";
-
 const crypto = require("crypto");
-const encryption = require("./encryption");
-const readline = require("readline");
+const { program } = require("commander");
+const encryption = require("./lib/crypto");
 const fs = require("fs");
-
-function readInput(query) {
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
-
-  return new Promise((resolve) =>
-    rl.question(query, (ans) => {
-      rl.close();
-      resolve(ans);
-    })
-  );
-}
+const cli = require("./lib/cli");
+const util = require("./lib/util");
 
 function readFile(filePath) {
   return fs.readFileSync(filePath, { encoding: "utf-8" });
@@ -27,24 +13,58 @@ function writeFile(filePath, content) {
   fs.writeFileSync(filePath, content);
 }
 
+function defaultHandler(password, inputName, outputName, encryptOrDecrypt) {
+  const { encrypt, decrypt } = encryption(
+    crypto.createHash("sha256").update(password).digest("hex")
+  );
+
+  switch (encryptOrDecrypt) {
+    case "Encrypt":
+      writeFile(outputName, encrypt(readFile(inputName)));
+      break;
+    case "Decrypt":
+      writeFile(outputName, decrypt(readFile(inputName)));
+      break;
+  }
+}
+
+function configHandler(config, password) {
+  const { decrypt } = encryption(
+    crypto.createHash("sha256").update(password).digest("hex")
+  );
+
+  if (util.isKeyDuplicateInArray(config, "inputName")) {
+    console.log("'inputName' is duplicated");
+    return;
+  }
+
+  if (util.isKeyDuplicateInArray(config, "outputName")) {
+    console.log("'outputName' is duplicated");
+    return;
+  }
+
+  config.forEach(({ inputName, outputName }) => {
+    writeFile(outputName, decrypt(readFile(inputName)));
+  });
+}
+
 (async () => {
   try {
-    const password = await readInput("Password: ");
-    const inputName = `./file/${await readInput("Input file name: ")}`;
-    const outputName = `./file/${await readInput("Output file name: ")}`;
-    const encryptOrDecrypt = await readInput(
-      "Encrypt Or decrypt\n(a)Encrypt\n(b)Decrypt\n: "
-    );
-    const hash = crypto.createHash("sha256").update(password).digest("hex");
-    const { encrypt, decrypt } = encryption(hash);
+    program.option("-c, --config", "Use config 'crypto-config.json'");
+    program.parse(process.argv);
 
-    switch (encryptOrDecrypt) {
-      case "a":
-        writeFile(outputName, encrypt(readFile(inputName)));
-        break;
-      case "b":
-        writeFile(outputName, decrypt(readFile(inputName)));
-        break;
+    if (program.config) {
+      const config = JSON.parse(readFile("./crypto-config.json"));
+      const { password, encryptOrDecrypt } = await cli.useConfig();
+      configHandler(config, password, encryptOrDecrypt);
+    } else {
+      const {
+        password,
+        inputName,
+        outputName,
+        encryptOrDecrypt,
+      } = await cli.useDefault();
+      defaultHandler(password, inputName, outputName, encryptOrDecrypt);
     }
   } catch (err) {
     console.error("Encrypt Or decrypt fail");

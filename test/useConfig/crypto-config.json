@@ -1,0 +1,10 @@
+[
+  {
+    "inputName": ".env.local",
+    "outputName": ".env"
+  },
+  {
+    "inputName": ".env.local2",
+    "outputName": ".env2"
+  }
+]
