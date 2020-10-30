@@ -20,10 +20,16 @@ function defaultHandler(password, inputName, outputName, encryptOrDecrypt) {
 
   switch (encryptOrDecrypt) {
     case "Encrypt":
-      writeFile(outputName, encrypt(readFile(inputName)));
+      writeFile(
+        `./file/${outputName}`,
+        encrypt(readFile(`./file/${inputName}`))
+      );
       break;
     case "Decrypt":
-      writeFile(outputName, decrypt(readFile(inputName)));
+      writeFile(
+        `./file/${outputName}`,
+        decrypt(readFile(`./file/${inputName}`))
+      );
       break;
   }
 }
@@ -44,7 +50,7 @@ function configHandler(config, password) {
   }
 
   config.forEach(({ inputName, outputName }) => {
-    writeFile(outputName, decrypt(readFile(inputName)));
+    writeFile(`./file/${outputName}`, decrypt(readFile(`./file/${inputName}`)));
   });
 }
 
@@ -54,7 +60,7 @@ function configHandler(config, password) {
     program.parse(process.argv);
 
     if (program.config) {
-      const config = JSON.parse(readFile("./crypto-config.json"));
+      const config = JSON.parse(readFile("./file/crypto-config.json"));
       const { password, encryptOrDecrypt } = await cli.useConfig();
       configHandler(config, password, encryptOrDecrypt);
     } else {
