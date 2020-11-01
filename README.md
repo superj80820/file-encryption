@@ -1,33 +1,41 @@
-## How to run?
+透過簡單的指令使用密碼將檔案加密與解密
 
-### Decrypt
+## 怎麼運作？
+
+### 加密
 
 ```bash
-$ docker run -it -v ${PWD}:/app/file superj80820/envencryption
+$ docker run -it -v ${PWD}:/app/file superj80820/fileencryption
 ```
 
-Select a `specific file` to decrypt it into `.env`
+輸入加密密碼，選擇需加密的檔案與輸出檔名，
 
-![](https://i.imgur.com/E0R93iX.png)
+![](https://i.imgur.com/LCWtGVk.png)
 
-After that, `.env` will be created
+之後加密檔案就會產生。
 
-### Encrypt
+### 解密
 
 ```bash
-$ docker run -it -v ${PWD}:/app/file superj80820/envencryption
+$ docker run -it -v ${PWD}:/app/file superj80820/fileencryption
 ```
 
-Select a `specific env file` to encrypt
+輸入解密密碼，選擇需解密的檔案與輸出檔名，
 
-![](https://i.imgur.com/rtNqwlc.png)
+![](https://i.imgur.com/1RtugKO.png)
 
-After that, encrypted `specific env file` will be created
+之後解密檔案就會產生。
 
-## Development
+---
+
+如要批次運行，可輸入以下指令
+
+```
+$ docker run -it -v ${PWD}:/app/file superj80820/fileencryption -c <InputFile>:<OutputFile>:<Encrypt Or decrypt>
+```
 
 ```bash
-$ docker build . -t="superj80820/envencryption"
+$ docker run -it -v ${PWD}:/app/file superj80820/fileencryption -c .env:.env.local:Encrypt -c .env:.env.test:Dencrypt
 ```
 
 ## Reference

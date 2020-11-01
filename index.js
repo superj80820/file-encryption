@@ -70,7 +70,7 @@ function configHandler(config, password) {
     );
     program.parse(process.argv);
 
-    if (program.config) {
+    if (program.config.length !== 0) {
       const { password } = await cli.useConfig();
       configHandler(program.config, password);
       return;
