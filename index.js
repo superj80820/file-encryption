@@ -1,17 +1,9 @@
 const crypto = require("crypto");
 const { program } = require("commander");
 const encryption = require("./lib/crypto");
-const fs = require("fs");
 const cli = require("./lib/cli");
 const util = require("./lib/util");
-
-function readFile(filePath) {
-  return fs.readFileSync(filePath, { encoding: "utf-8" });
-}
-
-function writeFile(filePath, content) {
-  fs.writeFileSync(filePath, content);
-}
+const helper = require("./lib/helper");
 
 function defaultHandler(password, inputName, outputName, encryptOrDecrypt) {
   const { encrypt, decrypt } = encryption(
@@ -20,58 +12,77 @@ function defaultHandler(password, inputName, outputName, encryptOrDecrypt) {
 
   switch (encryptOrDecrypt) {
     case "Encrypt":
-      writeFile(
+      helper.writeFile(
         `./file/${outputName}`,
-        encrypt(readFile(`./file/${inputName}`))
+        encrypt(helper.readFile(`./file/${inputName}`))
       );
       break;
     case "Decrypt":
-      writeFile(
+      helper.writeFile(
         `./file/${outputName}`,
-        decrypt(readFile(`./file/${inputName}`))
+        decrypt(helper.readFile(`./file/${inputName}`))
       );
       break;
   }
 }
 
 function configHandler(config, password) {
-  const { decrypt } = encryption(
+  const { encrypt, decrypt } = encryption(
     crypto.createHash("sha256").update(password).digest("hex")
   );
 
-  if (util.isKeyDuplicateInArray(config, "inputName")) {
-    console.log("'inputName' is duplicated");
-    return;
-  }
-
-  if (util.isKeyDuplicateInArray(config, "outputName")) {
-    console.log("'outputName' is duplicated");
-    return;
-  }
-
-  config.forEach(({ inputName, outputName }) => {
-    writeFile(`./file/${outputName}`, decrypt(readFile(`./file/${inputName}`)));
-  });
+  util
+    .arrayToSpecKeysObejct(config, [
+      "inputName",
+      "outputName",
+      "encryptOrDecrypt",
+    ])
+    .forEach(({ inputName, outputName, encryptOrDecrypt }) => {
+      const isFileExistInFoler = helper.isFileExistInFoler("./file")(inputName);
+      if (isFileExistInFoler === "File not exist") {
+        console.warn(`${isFileExistInFoler}: ${inputName}`);
+        return;
+      }
+      switch (encryptOrDecrypt) {
+        case "Encrypt":
+          helper.writeFile(
+            `./file/${outputName}`,
+            encrypt(helper.readFile(`./file/${inputName}`))
+          );
+          break;
+        case "Decrypt":
+          helper.writeFile(
+            `./file/${outputName}`,
+            decrypt(helper.readFile(`./file/${inputName}`))
+          );
+          break;
+      }
+    });
 }
 
 (async () => {
   try {
-    program.option("-c, --config", "Use config 'crypto-config.json'");
+    program.option(
+      "-c, --config <value>",
+      "Use config to encrypt/decrypt",
+      (value, previous) => previous.concat([value]),
+      []
+    );
     program.parse(process.argv);
 
     if (program.config) {
-      const config = JSON.parse(readFile("./file/crypto-config.json"));
-      const { password, encryptOrDecrypt } = await cli.useConfig();
-      configHandler(config, password, encryptOrDecrypt);
-    } else {
-      const {
-        password,
-        inputName,
-        outputName,
-        encryptOrDecrypt,
-      } = await cli.useDefault();
-      defaultHandler(password, inputName, outputName, encryptOrDecrypt);
+      const { password } = await cli.useConfig();
+      configHandler(program.config, password);
+      return;
     }
+
+    const {
+      password,
+      inputName,
+      outputName,
+      encryptOrDecrypt,
+    } = await cli.useDefault();
+    defaultHandler(password, inputName, outputName, encryptOrDecrypt);
   } catch (err) {
     console.error("Encrypt Or decrypt fail");
     console.error(err);
