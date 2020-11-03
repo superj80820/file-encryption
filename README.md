@@ -35,7 +35,7 @@ $ docker run -it -v ${PWD}:/app/file superj80820/fileencryption -c <InputFile>:<
 ```
 
 ```bash
-$ docker run -it -v ${PWD}:/app/file superj80820/fileencryption -c .env:.env.local:Encrypt -c .env:.env.test:Dencrypt
+$ docker run -it -v ${PWD}:/app/file superj80820/fileencryption -c .env:.env.local:Encrypt -c .env:.env.test:Decrypt
 ```
 
 ## Reference
